@@ -3,6 +3,7 @@ Is a simple script to get instrument configuration for StrategyQUant X.
 
 # How to install?
 To use this script open your MQL5 Data folder and paste the script on the Indicators folder. Then compile it with MetaEditor and when the compilation finished go to Metatrade 5 and launch the script into the chart that you want.
+To be able to get the Darwinex Commissions you need to add "https://www.darwinex.com" url into Tools > Options > Experts Advisors > Allow WebRequest for listed URL menu and mark it as enabled.
 
 # What data give me the script?.
 The script show you the following data:
