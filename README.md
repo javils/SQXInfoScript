@@ -6,18 +6,19 @@ To use this script open your MQL5 Data folder and paste the script on the Indica
 
 # What data give me the script?.
 The script show you the following data:
-    * Point value (USD)
-    * Pip/Tick step
-    * Pip/Tick size
-    * Order size step
-    * Several Spread info like average, percentiles, mode, etc. Adapted to the Pip/Tick size value.
-    * Swap Long (USD)
-    * Swap Short (USD)
-    * Triple Swap day
+* Point value (USD)
+* Pip/Tick step
+* Pip/Tick size
+* Order size step
+* Several Spread info like average, percentiles, mode, etc. Adapted to the Pip/Tick size value.
+* Commissions from Darwinex prepared to set as Size Based (USD) or Percentage Based.
+* Swap Long (USD)
+* Swap Short (USD)
+* Triple Swap day
 
 # Observations
 * The values are converted automatically to USD using the forex pair that you broker have.
-* We can't take the comissions because MEtatrader 5 don't allow to get it programatically, at least in August 2024.
+* To take the commissions info I'm using Darwinex api because MT5 doesn't allow get comissions in 10/08/2024.
 * It's only tested in Darwinex, could work in your broker but I don't test in others brokers. So if doesn't work, please contact me and we try to solve the problem :)
 
 # Why?
