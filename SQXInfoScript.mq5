@@ -5,8 +5,6 @@
 #property strict
 
 #include "JSON.mqh"
-#include <Generic\HashMap.mqh>
-
 
 
 enum CommissionType {
@@ -58,44 +56,40 @@ public:
 void OnStart() {
     SQXData sqxData;
     DarwinexCommissions darwinexCommisions[];
-    int spreads_int [];
+    int spreads[];
     int bars = iBars(_Symbol, PERIOD_M1);
-    int num_spreads = CopySpread(_Symbol, PERIOD_M1, 0, bars, spreads_int);
+    int numSpreads = CopySpread(_Symbol, PERIOD_M1, 0, bars, spreads);
 // Ensure we have enough ticks
-    if(num_spreads < 1) {
+    if(numSpreads < 1) {
         Print("No tick data available for the specified period.");
         return;
     }
 // Variables for calculating spread statistics
-    double total_spread = 0.0;
-    double max_spread = 0.0;
-    double min_spread = DBL_MAX;
-    double spread_array[];
-    ArrayResize(spread_array, num_spreads, num_spreads);
+    double totalSpread = 0.0;
+    double maxSpread = 0.0;
+    double minSpread = DBL_MAX;
 // Iterate over the ticks and calculate spreads
-    for(int i = 0; i < num_spreads; i++) {
-        double spread = spreads_int[i];
-        total_spread += spread;
+    for(int i = 0; i < numSpreads; i++) {
+        int spread = spreads[i];
+        totalSpread += spread;
         // Determine maximum and minimum spread
-        if(spread > max_spread)
-            max_spread = spread;
-        if(spread < min_spread)
-            min_spread = spread;
-        // Add the spread to the array
-        spread_array[ArraySize(spread_array) - 1 - i] = spread;
+        if(spread > maxSpread)
+            maxSpread = spread;
+        if(spread < minSpread)
+            minSpread = spread;
     }
-    ArraySort(spread_array);
+    ArraySort(spreads);
     double tickWeight = GetTickWeight();
     sqxData.symbol = _Symbol;
     sqxData.currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) / tickWeight;
-    sqxData.maximumSpread = max_spread / tickWeight;
-    sqxData.minimumSpread = min_spread / tickWeight;
-    sqxData.averageSpread = (total_spread / num_spreads) / tickWeight;
-    sqxData.percentile50Spread = Percentile(spread_array, 50) / tickWeight;
-    sqxData.percentile75Spread = Percentile(spread_array, 75) / tickWeight;
-    sqxData.percentile90Spread = Percentile(spread_array, 90) / tickWeight;
-    sqxData.percentile99Spread = Percentile(spread_array, 99) / tickWeight;
-    sqxData.modeSpread = CalculateMode(spread_array) / tickWeight;
+    sqxData.maximumSpread = maxSpread / tickWeight;
+    sqxData.minimumSpread = minSpread / tickWeight;
+    sqxData.averageSpread = (totalSpread / numSpreads) / tickWeight;
+    sqxData.percentile50Spread = Percentile(spreads, 50) / tickWeight;
+    sqxData.percentile75Spread = Percentile(spreads, 75) / tickWeight;
+    sqxData.percentile90Spread = Percentile(spreads, 90) / tickWeight;
+    sqxData.percentile99Spread = Percentile(spreads, 99) / tickWeight;
+    sqxData.modeSpread = CalculateMode(spreads) / tickWeight;
 // Output results
     Comment(StringFormat("Symbol: %s", _Symbol));
     GetSQXInfo(sqxData);
@@ -229,38 +223,38 @@ int GetTickWeight() {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double Percentile(double &data[], double percentile) {
+double Percentile(int &data[], double percentile) {
     int n = ArraySize(data);
     if(n == 0)
         return 0.0;
 // Calculate the rank of the percentile
     double rank = (percentile / 100.0) * (n - 1);
-    int lower_index = (int)MathFloor(rank);
-    int upper_index = (int)MathCeil(rank);
+    int lowerIndex = (int)MathFloor(rank);
+    int upperIndex = (int)MathCeil(rank);
 // Interpolation
-    if(upper_index >= n)
-        upper_index = n - 1;
-    double weight = rank - lower_index;
-    return data[lower_index] * (1.0 - weight) + data[upper_index] * weight;
+    if(upperIndex >= n)
+        upperIndex = n - 1;
+    double weight = rank - lowerIndex;
+    return data[lowerIndex] * (1.0 - weight) + data[upperIndex] * weight;
 }
 
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double CalculateMode(double &data[]) {
+double CalculateMode(int &data[]) {
     int n = ArraySize(data);
     if(n == 0)
         return 0.0;
 // Use a map to count frequencies of each spread value
     double mode = data[0];
-    int max_count = 0;
+    int maxCount = 0;
     int count = 1;
 // Iterate over the sorted array to find the mode
     for(int i = 1; i < n; i++) {
         if(data[i] == data[i - 1]) {
             count++;
-            if(count > max_count) {
-                max_count = count;
+            if(count > maxCount) {
+                maxCount = count;
                 mode = data[i];
             }
         } else {
@@ -272,24 +266,24 @@ double CalculateMode(double &data[]) {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double GetCrossRate(string curr_prof, string curr_acc) {
-    if(curr_prof == curr_acc) {
+double GetCrossRate(string currencyProfit, string currencyAccount) {
+    if(currencyProfit == currencyAccount) {
         return 1.0;
     }
-    string symbol = curr_prof + curr_acc;
+    string symbol = currencyProfit + currencyAccount;
     if(CheckMarketWatch(symbol)) {
         double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
         if(bid != 0.0)
             return bid;
     }
 // Try the inverse symbol
-    symbol = curr_acc + curr_prof;
+    symbol = currencyAccount + currencyProfit;
     if(CheckMarketWatch(symbol)) {
         double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
         if(ask != 0.0)
             return 1 / ask;
     }
-    Print(__FUNCTION__, ": Error, cannot get cross rate for ", curr_prof + curr_acc);
+    Print(__FUNCTION__, ": Error, cannot get cross rate for ", currencyProfit + currencyAccount);
     return 0.0;
 }
 
