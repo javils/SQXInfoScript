@@ -6,6 +6,7 @@
 
 
 #include "SQXInfoCalculator.mqh"
+#include "UTCTimeCalculator.mqh"
 
 
 //+------------------------------------------------------------------+
@@ -22,13 +23,18 @@ void OnStart() {
 //|                                                                  |
 //+------------------------------------------------------------------+
 void ShowSQXData(SQXData &sqxData) {
+    UTCTimeCalculator utcTimeCalculator;
+
     string commissionInfo;
     if (sqxData.commissionType != CommissionType::Undef) {
         commissionInfo = "\nCOMMISSION INFO\n" +
                          StringFormat("Commission: %.5f %s\n", sqxData.commissionValue, GetCommissionTypeString(sqxData.commissionType));
     }
+
     string data = "\nSQX INFO\n" +
                   StringFormat("Symbol: %s\n", _Symbol) +
+                  StringFormat("Broker Time: %s\n", utcTimeCalculator.GetUTCServerTimeString()) +
+                  StringFormat("PC Time: %s\n", utcTimeCalculator.GetUTCPCTimeString()) +
                   StringFormat("Point value: %.2f USD\n", sqxData.pointValue) +
                   StringFormat("Pip/Tick step: %.5f\n", sqxData.pipTickStep) +
                   StringFormat("Order size step: %.2f\n", sqxData.orderSizeStep) +
@@ -51,7 +57,6 @@ void ShowSQXData(SQXData &sqxData) {
     Comment(data);
     Print(data);
 }
-
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
