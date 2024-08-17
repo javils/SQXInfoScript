@@ -3,10 +3,10 @@
 //|                                            Javier Luque Sanabria |
 //|                                                                  |
 //+------------------------------------------------------------------+
-#include "JSON.mqh"
 #include "StatsFuncs.mqh"
 #include "models/SQXData.mqh"
 #include "models/Commission.mqh"
+#include "DarwinexCommissionsCalculator.mqh"
 
 #property copyright "Javier Luque Sanabria"
 
@@ -22,29 +22,28 @@ private:
     double           GetPipTickStep();
     double           GetOrderSizeStep();
     int              GetTickWeight();
-
-    void             GetCommissions(string symbol, Commission &commission);
-    void             parseCommissions(CJAVal &darwinexInfo, Commission &commissions[]);
+    
+    SQXCommissionsCalculator *sqxCommissionsCalculator;
 public:
-
-    void             calculate(SQXData& sqxData);
+    SQXInfoCalculator() { sqxCommissionsCalculator = new DarwinexCommissionsCalculator(); };
+    ~SQXInfoCalculator() { delete sqxCommissionsCalculator; };
+    
+    void             Calculate(SQXData& sqxData);
 };
 
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void SQXInfoCalculator::calculate(SQXData &sqxData) {
+void SQXInfoCalculator::Calculate(SQXData &sqxData) {
     Commission commisions[];
     int spreads[];
     int bars = iBars(_Symbol, PERIOD_M1);
     int numSpreads = CopySpread(_Symbol, PERIOD_M1, 0, bars, spreads);
-// Ensure we have enough ticks
+    
     if(numSpreads < 1) {
         Print("No tick data available for the specified period.");
         return;
     }
-// Output results
-    Comment(StringFormat("Symbol: %s", _Symbol));
     GetSQXInfo(sqxData, spreads);
     GetCommissionsInfo(sqxData);
     GetSwapsInfo(sqxData);
@@ -105,7 +104,7 @@ void SQXInfoCalculator::GetSwapsInfo(SQXData &sqxData) {
 //+------------------------------------------------------------------+
 void SQXInfoCalculator::GetCommissionsInfo(SQXData &sqxData) {
     Commission darwinexCommission;
-    GetCommissions(_Symbol, darwinexCommission);
+    sqxCommissionsCalculator.Calculate(_Symbol, darwinexCommission);
     sqxData.commissionValue = darwinexCommission.value * 2;
     sqxData.commissionType = darwinexCommission.type;
     if(darwinexCommission.type == CommissionType::Size && StringCompare(darwinexCommission.currency, "USD") != 0) {
@@ -156,56 +155,3 @@ int SQXInfoCalculator::GetTickWeight() {
     }
     return tickWeight;
 }
-
-
-//+------------------------------------------------------------------+
-
-#define URL "https://www.darwinex.com/graphics/spreads?dx_platform=DX"
-
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void SQXInfoCalculator::GetCommissions(string symbol, Commission &commission) {
-    Commission commissions[];
-    char data[];
-    char result[];
-    string resultHeaders;
-    if(WebRequest("GET", URL, NULL, 10, data, result, resultHeaders) < 0) {
-        commission.type = CommissionType::Undef;
-        Print("Can't get the comissions from Darwinex. Be sure you've added \"https://www.darwinex.com\" url into Tools > Options > Experts Advisors > Allow WebRequest for listed URL and marked as enabled.");
-        return;
-    }
-    string response = CharArrayToString(result);
-    CJAVal darwinexInfo;
-    darwinexInfo.Deserialize(response);
-    parseCommissions(darwinexInfo["indices"], commissions);
-    parseCommissions(darwinexInfo["commodities"], commissions);
-    parseCommissions(darwinexInfo["forex"], commissions);
-    parseCommissions(darwinexInfo["stocks"], commissions);
-    parseCommissions(darwinexInfo["crypto"], commissions);
-    parseCommissions(darwinexInfo["etf"], commissions);
-    for(int i = 0; i < ArraySize(commissions); i++) {
-        if(commissions[i].symbol == symbol) {
-            commission = commissions[i];
-            return ;
-        }
-    }
-    commission.type = CommissionType::Undef;
-}
-
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void SQXInfoCalculator::parseCommissions(CJAVal &darwinexInfo, Commission &commissions[]) {
-    for(int i = 0; i < darwinexInfo.Size(); i++) {
-        Commission commission;
-        commission.symbol = darwinexInfo[i]["asset"].ToStr();
-        commission.value = darwinexInfo[i]["commission"].ToDbl();
-        commission.currency = darwinexInfo[i]["type"].ToStr() == "CFD_FX" ? StringSubstr(darwinexInfo[i]["asset"].ToStr(), 0, 3) : darwinexInfo[i]["currency"].ToStr();
-        commission.type = darwinexInfo[i]["type"].ToStr() == "CFD_COMM" ? CommissionType::Percentage : CommissionType::Size;
-        int size = ArraySize(commissions);
-        ArrayResize(commissions, size + 1, size + 1);
-        commissions[size] = commission;
-    }
-}
-//+------------------------------------------------------------------+

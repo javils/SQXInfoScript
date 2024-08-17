@@ -14,7 +14,7 @@
 void OnStart() {
     SQXInfoCalculator sqxInfoCalculator;
     SQXData sqxData;
-    sqxInfoCalculator.calculate(sqxData);
+    sqxInfoCalculator.Calculate(sqxData);
     ShowSQXData(sqxData);
 }
 
@@ -28,6 +28,7 @@ void ShowSQXData(SQXData &sqxData) {
                          StringFormat("Commission: %.5f %s\n", sqxData.commissionValue, GetCommissionTypeString(sqxData.commissionType));
     }
     string data = "\nSQX INFO\n" +
+                  StringFormat("Symbol: %s\n", _Symbol) +
                   StringFormat("Point value: %.2f USD\n", sqxData.pointValue) +
                   StringFormat("Pip/Tick step: %.5f\n", sqxData.pipTickStep) +
                   StringFormat("Order size step: %.2f\n", sqxData.orderSizeStep) +
