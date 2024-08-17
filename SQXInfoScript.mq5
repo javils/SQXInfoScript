@@ -64,35 +64,9 @@ void OnStart() {
         Print("No tick data available for the specified period.");
         return;
     }
-// Variables for calculating spread statistics
-    double totalSpread = 0.0;
-    double maxSpread = 0.0;
-    double minSpread = DBL_MAX;
-// Iterate over the ticks and calculate spreads
-    for(int i = 0; i < numSpreads; i++) {
-        int spread = spreads[i];
-        totalSpread += spread;
-        // Determine maximum and minimum spread
-        if(spread > maxSpread)
-            maxSpread = spread;
-        if(spread < minSpread)
-            minSpread = spread;
-    }
-    ArraySort(spreads);
-    double tickWeight = GetTickWeight();
-    sqxData.symbol = _Symbol;
-    sqxData.currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) / tickWeight;
-    sqxData.maximumSpread = maxSpread / tickWeight;
-    sqxData.minimumSpread = minSpread / tickWeight;
-    sqxData.averageSpread = (totalSpread / numSpreads) / tickWeight;
-    sqxData.percentile50Spread = Percentile(spreads, 50) / tickWeight;
-    sqxData.percentile75Spread = Percentile(spreads, 75) / tickWeight;
-    sqxData.percentile90Spread = Percentile(spreads, 90) / tickWeight;
-    sqxData.percentile99Spread = Percentile(spreads, 99) / tickWeight;
-    sqxData.modeSpread = CalculateMode(spreads) / tickWeight;
 // Output results
     Comment(StringFormat("Symbol: %s", _Symbol));
-    GetSQXInfo(sqxData);
+    GetSQXInfo(sqxData, spreads);
     GetCommissionsInfo(sqxData);
     GetSwapsInfo(sqxData);
     ShowSQXData(sqxData);
@@ -133,11 +107,37 @@ void ShowSQXData(SQXData &sqxData) {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void GetSQXInfo(SQXData &sqxData) {
+void GetSQXInfo(SQXData &sqxData, int &spreads[]) {
+    double totalSpread = 0.0;
+    double maxSpread = 0.0;
+    double minSpread = DBL_MAX;
+    int numSpreads = ArraySize(spreads);
+    
+    for(int i = 0; i < numSpreads; i++) {
+        int spread = spreads[i];
+        totalSpread += spread;
+        if(spread > maxSpread)
+            maxSpread = spread;
+        if(spread < minSpread)
+            minSpread = spread;
+    }
+    ArraySort(spreads);
+    double tickWeight = GetTickWeight();
+    
+    sqxData.symbol = _Symbol;
     sqxData.pointValue = GetPointValue();
     sqxData.pipTickStep = GetPipTickStep();
     sqxData.orderSizeStep = GetOrderSizeStep();
     sqxData.pipTickSize = GetPipTickSize();
+    sqxData.currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) / tickWeight;
+    sqxData.maximumSpread = maxSpread / tickWeight;
+    sqxData.minimumSpread = minSpread / tickWeight;
+    sqxData.averageSpread = (totalSpread / numSpreads) / tickWeight;
+    sqxData.percentile50Spread = Percentile(spreads, 50) / tickWeight;
+    sqxData.percentile75Spread = Percentile(spreads, 75) / tickWeight;
+    sqxData.percentile90Spread = Percentile(spreads, 90) / tickWeight;
+    sqxData.percentile99Spread = Percentile(spreads, 99) / tickWeight;
+    sqxData.modeSpread = CalculateMode(spreads) / tickWeight;
 }
 //+------------------------------------------------------------------+
 //|                                                                  |
