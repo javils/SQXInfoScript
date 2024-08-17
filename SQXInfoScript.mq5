@@ -6,49 +6,8 @@
 
 #include "JSON.mqh"
 #include "StatsFuncs.mqh"
-
-
-enum CommissionType {
-    Size,
-    Percentage,
-    Undef
-};
-
-struct SQXData {
-    string            symbol;
-    double            pointValue;
-    double            pipTickStep;
-    double            orderSizeStep;
-    double            pipTickSize;
-
-    double            currentSpread;
-    double            averageSpread;
-    double            percentile50Spread;
-    double            percentile75Spread;
-    double            percentile90Spread;
-    double            percentile99Spread;
-    double            modeSpread;
-    double            maximumSpread;
-    double            minimumSpread;
-
-    double            commissionValue;
-    CommissionType    commissionType;
-
-    double            swapLong;
-    double            swapShort;
-    string            tripleSwapDay;
-};
-
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-class DarwinexCommissions {
-public:
-    string            symbol;
-    double            value;
-    string            currency;
-    CommissionType    type;
-};
+#include "models/SQXData.mqh"
+#include "models/Commission.mqh"
 
 
 //+------------------------------------------------------------------+
@@ -56,7 +15,7 @@ public:
 //+------------------------------------------------------------------+
 void OnStart() {
     SQXData sqxData;
-    DarwinexCommissions darwinexCommisions[];
+    Commission commisions[];
     int spreads[];
     int bars = iBars(_Symbol, PERIOD_M1);
     int numSpreads = CopySpread(_Symbol, PERIOD_M1, 0, bars, spreads);
@@ -159,7 +118,7 @@ void GetSwapsInfo(SQXData &sqxData) {
 //|                                                                  |
 //+------------------------------------------------------------------+
 void GetCommissionsInfo(SQXData &sqxData) {
-    DarwinexCommissions darwinexCommission;
+    Commission darwinexCommission;
     GetCommissions(_Symbol, darwinexCommission);
     sqxData.commissionValue = darwinexCommission.value * 2;
     sqxData.commissionType = darwinexCommission.type;
@@ -227,8 +186,8 @@ int GetTickWeight() {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void GetCommissions(string symbol, DarwinexCommissions &commission) {
-    DarwinexCommissions commissions[];
+void GetCommissions(string symbol, Commission &commission) {
+    Commission commissions[];
     char data[];
     char result[];
     string resultHeaders;
@@ -258,9 +217,9 @@ void GetCommissions(string symbol, DarwinexCommissions &commission) {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void parseCommissions(CJAVal &darwinexInfo, DarwinexCommissions &commissions[]) {
+void parseCommissions(CJAVal &darwinexInfo, Commission &commissions[]) {
     for(int i = 0; i < darwinexInfo.Size(); i++) {
-        DarwinexCommissions commission;
+        Commission commission;
         commission.symbol = darwinexInfo[i]["asset"].ToStr();
         commission.value = darwinexInfo[i]["commission"].ToDbl();
         commission.currency = darwinexInfo[i]["type"].ToStr() == "CFD_FX" ? StringSubstr(darwinexInfo[i]["asset"].ToStr(), 0, 3) : darwinexInfo[i]["currency"].ToStr();
