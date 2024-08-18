@@ -3,11 +3,15 @@
 //|                            Copyright 2024, Javier Luque Sanabria |
 //+------------------------------------------------------------------+
 #property strict
+#property script_show_inputs
 
 
 #include "SQXInfoCalculator.mqh"
 #include "UTCTimeCalculator.mqh"
+#include "SQXInstrumentXMLGenerator.mqh"
 
+
+input bool generateXMLFile = true;  // Generate an .xml file.
 
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -17,6 +21,11 @@ void OnStart() {
     SQXData sqxData;
     sqxInfoCalculator.Calculate(sqxData);
     ShowSQXData(sqxData);
+
+    if (generateXMLFile) {
+        SQXInstrumentXMLGenerator xmlGenerator;
+        xmlGenerator.Generate(sqxData);
+    }
 }
 
 //+------------------------------------------------------------------+

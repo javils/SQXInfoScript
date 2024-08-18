@@ -31,5 +31,6 @@ struct SQXData {
     double            swapLong;
     double            swapShort;
     string            tripleSwapDay;
+    
 };
 //+------------------------------------------------------------------+
