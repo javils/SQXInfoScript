@@ -29,7 +29,13 @@ string UTCTimeCalculator::GetUTCPCTimeString() {
     bool isLocalSummerTime = TimeDaylightSavings() != 0;
     int localTimeOffset = (int)(localTime - TimeGMT()) / 3600;
     localTimeOffset -= isLocalSummerTime ? 1 : 0;
-    return StringFormat("%s (UTC+%d)", TimeToString(localTime, TIME_SECONDS), localTimeOffset);
+
+    if (localTimeOffset >= 0) {
+        return StringFormat("%s (UTC+%d)", TimeToString(localTime, TIME_SECONDS), localTimeOffset);
+    } else {
+        return StringFormat("%s (UTC-%d)", TimeToString(localTime, TIME_SECONDS), localTimeOffset);
+    }
+
 }
 
 //+------------------------------------------------------------------+
@@ -79,7 +85,12 @@ string UTCTimeCalculator::GetUTCServerTimeString() {
             brokerTimeOffset -= 1;
         }
     }
-    return StringFormat("%s (UTC+%d)", TimeToString(brokerTime, TIME_SECONDS), brokerTimeOffset);
+    
+    if (brokerTimeOffset >= 0) {
+        return StringFormat("%s (UTC+%d)", TimeToString(brokerTime, TIME_SECONDS), brokerTimeOffset);
+    } else {
+        return StringFormat("%s (UTC-%d)", TimeToString(brokerTime, TIME_SECONDS), brokerTimeOffset);
+    }
 }
 
 //+------------------------------------------------------------------+
