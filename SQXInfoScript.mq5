@@ -24,7 +24,9 @@ void OnStart() {
 
     if (generateXMLFile) {
         SQXInstrumentXMLGenerator xmlGenerator;
-        xmlGenerator.Generate(sqxData);
+        if (xmlGenerator.Generate(sqxData)) {
+            Alert(StringFormat("Instrument %s exported into MQL5/Files folder.\n\nTo find this folder click in File > Open Data Folder in your Metatrader 5 and open the MQL5 folder.\nInside this folder you can see a file named %s that you can import into you SQX  Data Manager.", sqxData.symbol, StringFormat("InstrumentInfo_%s.xml", sqxData.symbol)));
+        }
     }
 }
 
