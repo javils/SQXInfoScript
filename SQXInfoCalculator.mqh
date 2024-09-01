@@ -148,10 +148,19 @@ double SQXInfoCalculator::GetOrderSizeStep() {
 //|                                                                  |
 //+------------------------------------------------------------------+
 int SQXInfoCalculator::GetTickWeight() {
+#ifdef _MQL5_
     ENUM_SYMBOL_CALC_MODE calcMode = (ENUM_SYMBOL_CALC_MODE)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_CALC_MODE);
     int tickWeight = 1;
     if(calcMode == SYMBOL_CALC_MODE_FOREX || calcMode == SYMBOL_CALC_MODE_FOREX_NO_LEVERAGE) {
         tickWeight = 10;
     }
     return tickWeight;
+#else
+    long calcMode = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_CALC_MODE);
+    int tickWeight = 1;
+    if(calcMode == 0) {
+        tickWeight = 10;
+    }
+    return tickWeight;
+#endif
 }

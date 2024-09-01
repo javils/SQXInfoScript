@@ -80,9 +80,15 @@ bool CheckMarketWatch(string symbol) {
     ResetLastError();
 // check if symbol is selected in the MarketWatch
     if(!SymbolInfoInteger(symbol, SYMBOL_SELECT)) {
+#ifdef _MQL5_
         if(GetLastError() == ERR_MARKET_UNKNOWN_SYMBOL) {
             return false;
         }
+#else 
+        if(GetLastError() == ERR_UNKNOWN_SYMBOL) {
+            return false;
+        }
+#endif
         if(!SymbolSelect(symbol, true)) {
             return false;
         }

@@ -42,7 +42,11 @@ string UTCTimeCalculator::GetUTCPCTimeString() {
 //|                                                                  |
 //+------------------------------------------------------------------+
 string UTCTimeCalculator::GetUTCServerTimeString() {
+#ifdef __MQL5__
     datetime brokerTime = TimeTradeServer();
+#else
+    datetime brokerTime = TimeCurrent();
+#endif 
     int brokerTimeOffset = (int)(brokerTime - TimeGMT()) / 3600;
 
     datetime lastbar = iTime(_Symbol, PERIOD_H1, 0);

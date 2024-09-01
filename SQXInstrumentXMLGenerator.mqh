@@ -96,7 +96,9 @@ string SQXInstrumentXMLGenerator::GetCommissionInfo(SQXData &sqxData) {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+
 string SQXInstrumentXMLGenerator::GetDataType(SQXData &sqxData) {
+#ifdef _MQL5_
     ENUM_SYMBOL_CALC_MODE tradeCalcMode = (ENUM_SYMBOL_CALC_MODE) SymbolInfoInteger(sqxData.symbol, SYMBOL_TRADE_CALC_MODE);
 
     switch(tradeCalcMode) {
@@ -111,7 +113,12 @@ string SQXInstrumentXMLGenerator::GetDataType(SQXData &sqxData) {
 
     }
     return "4";
+
+#else
+   return "4";
+#endif
 }
+
 
 //+------------------------------------------------------------------+
 //|                                                                  |
