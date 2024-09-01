@@ -38,12 +38,14 @@ void SQXInfoCalculator::Calculate(SQXData &sqxData) {
     Commission commisions[];
     int spreads[];
     int bars = iBars(_Symbol, PERIOD_M1);
+#ifdef _MQL5_
     int numSpreads = CopySpread(_Symbol, PERIOD_M1, 0, bars, spreads);
-    
     if(numSpreads < 1) {
         Print("No tick data available for the specified period.");
         return;
     }
+#endif    
+    
     GetSQXInfo(sqxData, spreads);
     GetCommissionsInfo(sqxData);
     GetSwapsInfo(sqxData);
@@ -56,6 +58,7 @@ void SQXInfoCalculator::GetSQXInfo(SQXData &sqxData, int &spreads[]) {
     double totalSpread = 0.0;
     double maxSpread = 0.0;
     double minSpread = DBL_MAX;
+#ifdef _MQL5_
     int numSpreads = ArraySize(spreads);
     for(int i = 0; i < numSpreads; i++) {
         int spread = spreads[i];
@@ -66,6 +69,7 @@ void SQXInfoCalculator::GetSQXInfo(SQXData &sqxData, int &spreads[]) {
             minSpread = spread;
     }
     ArraySort(spreads);
+#endif
     double tickWeight = GetTickWeight();
     sqxData.symbol = _Symbol;
     sqxData.pointValue = GetPointValue();
@@ -73,6 +77,7 @@ void SQXInfoCalculator::GetSQXInfo(SQXData &sqxData, int &spreads[]) {
     sqxData.orderSizeStep = GetOrderSizeStep();
     sqxData.pipTickSize = GetPipTickSize();
     sqxData.currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) / tickWeight;
+#ifdef _MQL5_
     sqxData.maximumSpread = maxSpread / tickWeight;
     sqxData.minimumSpread = minSpread / tickWeight;
     sqxData.averageSpread = (totalSpread / numSpreads) / tickWeight;
@@ -81,6 +86,7 @@ void SQXInfoCalculator::GetSQXInfo(SQXData &sqxData, int &spreads[]) {
     sqxData.percentile90Spread = Percentile(spreads, 90) / tickWeight;
     sqxData.percentile99Spread = Percentile(spreads, 99) / tickWeight;
     sqxData.modeSpread = CalculateMode(spreads) / tickWeight;
+#endif
 }
 //+------------------------------------------------------------------+
 //|                                                                  |
