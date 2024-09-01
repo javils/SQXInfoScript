@@ -38,7 +38,7 @@ void SQXInfoCalculator::Calculate(SQXData &sqxData) {
     Commission commisions[];
     int spreads[];
     int bars = iBars(_Symbol, PERIOD_M1);
-#ifdef _MQL5_
+#ifdef __MQL5__
     int numSpreads = CopySpread(_Symbol, PERIOD_M1, 0, bars, spreads);
     if(numSpreads < 1) {
         Print("No tick data available for the specified period.");
@@ -58,7 +58,7 @@ void SQXInfoCalculator::GetSQXInfo(SQXData &sqxData, int &spreads[]) {
     double totalSpread = 0.0;
     double maxSpread = 0.0;
     double minSpread = DBL_MAX;
-#ifdef _MQL5_
+#ifdef __MQL5__
     int numSpreads = ArraySize(spreads);
     for(int i = 0; i < numSpreads; i++) {
         int spread = spreads[i];
@@ -77,7 +77,7 @@ void SQXInfoCalculator::GetSQXInfo(SQXData &sqxData, int &spreads[]) {
     sqxData.orderSizeStep = GetOrderSizeStep();
     sqxData.pipTickSize = GetPipTickSize();
     sqxData.currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) / tickWeight;
-#ifdef _MQL5_
+#ifdef __MQL5__
     sqxData.maximumSpread = maxSpread / tickWeight;
     sqxData.minimumSpread = minSpread / tickWeight;
     sqxData.averageSpread = (totalSpread / numSpreads) / tickWeight;
@@ -154,7 +154,7 @@ double SQXInfoCalculator::GetOrderSizeStep() {
 //|                                                                  |
 //+------------------------------------------------------------------+
 int SQXInfoCalculator::GetTickWeight() {
-#ifdef _MQL5_
+#ifdef __MQL5__
     ENUM_SYMBOL_CALC_MODE calcMode = (ENUM_SYMBOL_CALC_MODE)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_CALC_MODE);
     int tickWeight = 1;
     if(calcMode == SYMBOL_CALC_MODE_FOREX || calcMode == SYMBOL_CALC_MODE_FOREX_NO_LEVERAGE) {
